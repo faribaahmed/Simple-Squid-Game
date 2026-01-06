@@ -1,0 +1,4 @@
+# Simple-Squid-Game
+This project is a Java-based simulation inspired by the popular Netflix series Squid Game, featuring three interactive mini-games. The game is developed entirely using Java’s Swing and AWT frameworks, providing an engaging and visually interactive experience. Smooth screen transitions, timed challenges, and progressively increasing difficulty help create an atmosphere similar to the intense nature of the Squid Game universe.
+<br>
+The application consists of three mini-games, such as Red Light - Green Light, Memory Match, and Maze Game, which are played sequentially as different stages of the game. Each stage follows its own rules, time limits, and win or elimination conditions. The game flow is controlled programmatically, ensuring that players can only proceed to the next level if they successfully complete the current one.
