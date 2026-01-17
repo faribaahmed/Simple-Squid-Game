@@ -105,5 +105,71 @@ public class CompleteSquidGame {
         mainFrame.repaint();
         mainFrame.setVisible(true);
     }
+    // ==================== PLAYER NUMBER SCREEN ====================
+    private void PlayerNumberScreen() {
+        CardLayout cardLayout = new CardLayout();
+        JPanel mainPanel = new JPanel(cardLayout);
+
+        JPanel playerPanel = new JPanel();
+        playerPanel.setBackground(new Color(0, 40, 20));
+        playerPanel.setLayout(new BoxLayout(playerPanel, BoxLayout.Y_AXIS));
+
+        JLabel playerNumberLabel = new JLabel(String.valueOf(playerNumber));
+        playerNumberLabel.setFont(new Font("Orbitron", Font.BOLD, 150));
+        playerNumberLabel.setForeground(Color.WHITE);
+        playerNumberLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        playerPanel.add(Box.createVerticalStrut(50));
+        playerPanel.add(playerNumberLabel);
+        playerPanel.add(Box.createVerticalStrut(50));
+
+        // ==================== SMILE SCREEN ====================
+        JPanel smilePanel = new JPanel();
+        smilePanel.setBackground(new Color(0, 40, 20));
+        smilePanel.setLayout(new BoxLayout(smilePanel, BoxLayout.Y_AXIS));
+
+        JLabel smileEmoji = new JLabel("🙂");
+        smileEmoji.setFont(new Font("Orbitron", Font.BOLD, 500));
+        smileEmoji.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel smileText = new JLabel("SMILE");
+        smileText.setFont(new Font("Orbitron", Font.BOLD, 80));
+        smileText.setForeground(Color.WHITE);
+        smileText.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        smilePanel.add(Box.createVerticalStrut(10));
+        smilePanel.add(smileEmoji);
+        smilePanel.add(Box.createVerticalStrut(35));
+        smilePanel.add(smileText);
+
+        mainPanel.add(playerPanel, "PLAYER");
+        mainPanel.add(smilePanel, "SMILE");
+
+        mainFrame.getContentPane().removeAll();
+        mainFrame.add(mainPanel);
+        mainFrame.revalidate();
+        mainFrame.repaint();
+
+        cardLayout.show(mainPanel, "PLAYER");
+
+        java.util.Timer utilTimer = new java.util.Timer();
+        utilTimer.schedule(new java.util.TimerTask() {
+            @Override
+            public void run() {
+                SwingUtilities.invokeLater(() -> {
+                    cardLayout.show(mainPanel, "SMILE");
+                    mainFrame.addKeyListener(new KeyAdapter() {
+                        @Override
+                        public void keyPressed(KeyEvent e) {
+                            mainFrame.removeKeyListener(this);
+                            Instruction1();
+                        }
+                    });
+                    mainFrame.requestFocusInWindow();
+                });
+            }
+        }, 2000); // 2 seconds
+    }
+
 
 }
