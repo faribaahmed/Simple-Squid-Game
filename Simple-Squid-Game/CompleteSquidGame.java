@@ -170,6 +170,52 @@ public class CompleteSquidGame {
             }
         }, 2000); // 2 seconds
     }
+// ==================== (RED LIGHT GREEN LIGHT) INSTRUCTION ====================
+    private void Instruction1() {
+        JPanel panel = new JPanel();
+        panel.setBackground(Color.BLACK);
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        JLabel game = new JLabel("------RED LIGHT GREEN LIGHT------ ");
+        game.setFont(new Font("Arial", Font.BOLD, 70));
+        game.setForeground(new Color(204, 0, 102));
+        game.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel instruction = new JLabel("<html>" +
+                "1. When the light is GREEN, you may move forward by clicking the MOVE button.<br>" +
+                "2. When the light turns RED, STOP IMMEDIATELY! Moving during RED LIGHT will eliminate you.<br>" +
+                "3. Reach the finish line (100% progress) before time runs out.<br>" +
+                "4. <span style='color:green'>⋆₊ ⊹YOU WIN!⋆₊ ⊹</span><br>" +
+                "5. If you can't: <span style='color:red'>ELIMINATED</span> ☠" +
+                "</html>");
+        instruction.setFont(new Font("Arial", Font.PLAIN, 30));
+        instruction.setForeground(Color.WHITE);
+        instruction.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton startButton = new JButton("START GAME");
+        startButton.setFont(new Font("Arial", Font.BOLD, 35));
+        startButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        startButton.addActionListener(e -> startRedLightGreenLight());
+
+        panel.add(Box.createVerticalStrut(50));
+        panel.add(game);
+        panel.add(Box.createVerticalStrut(30));
+        panel.add(instruction);
+        panel.add(Box.createVerticalStrut(50));
+        panel.add(startButton);
+
+        mainFrame.getContentPane().removeAll();
+        mainFrame.add(panel);
+        mainFrame.revalidate();
+        mainFrame.repaint();
+    }
+
+    // ==================== GAME 1: RED LIGHT GREEN LIGHT ====================
+    private void startRedLightGreenLight() {
+        currentGame = 0;
+        mainFrame.setVisible(false);
+        new RedLightGreenLightGUI();
+    }
 
 
 }
