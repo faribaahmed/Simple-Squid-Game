@@ -216,6 +216,106 @@ public class CompleteSquidGame {
         mainFrame.setVisible(false);
         new RedLightGreenLightGUI();
     }
+    // ==================== INSTRUCTION 2 (MEMORY GAME) ====================
+    private void Instruction2() {
+        currentGame = 1;
+
+        JPanel panel = new JPanel();
+        panel.setBackground(Color.BLACK);
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        JLabel game = new JLabel("------MEMORY GAME------ ");
+        game.setFont(new Font("Arial", Font.BOLD, 70));
+        game.setForeground(new Color(204, 0, 102));
+        game.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel instruction = new JLabel("<html>" +
+                "1. You will be shown 12 cards.<br>" +
+                "2. There are 6 different symbols.<br>" +
+                "3. All of them are in pairs.<br>" +
+                "4. Flip the cards to see the symbols.<br>" +
+                "5. Match them in pairs in 40 seconds.<br>" +
+                "6. Complete it in the given time: <span style='color:green'>⋆₊ ⊹YOU WIN!⋆₊ ⊹</span><br>" +
+                "7. If you can't: <span style='color:red'>ELIMINATED</span> ☠" +
+                "</html>");
+        instruction.setFont(new Font("Arial", Font.PLAIN, 30));
+        instruction.setForeground(Color.WHITE);
+        instruction.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton startButton = new JButton("START GAME");
+        startButton.setFont(new Font("Arial", Font.BOLD, 35));
+        startButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        startButton.addActionListener(e -> startMemoryGame());
+
+        panel.add(Box.createVerticalStrut(50));
+        panel.add(game);
+        panel.add(Box.createVerticalStrut(30));
+        panel.add(instruction);
+        panel.add(Box.createVerticalStrut(50));
+        panel.add(startButton);
+
+        mainFrame.getContentPane().removeAll();
+        mainFrame.add(panel);
+        mainFrame.revalidate();
+        mainFrame.repaint();
+        mainFrame.setVisible(true);
+    }
+
+    // ==================== GAME 2: MEMORY GAME ====================
+    private void startMemoryGame() {
+        currentGame = 1;
+        mainFrame.setVisible(false);
+        new MemoryGameGUI();
+    }
+
+    // ==================== INSTRUCTION 3 (MAZE GAME) ====================
+    private void Instruction3() {
+        currentGame = 2;
+
+        JPanel panel = new JPanel();
+        panel.setBackground(Color.BLACK);
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        JLabel game = new JLabel("------MAZE GAME------ ");
+        game.setFont(new Font("Arial", Font.BOLD, 70));
+        game.setForeground(new Color(204, 0, 102));
+        game.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel instruction = new JLabel("<html>" +
+                "1. You will be shown a maze.<br>" +
+                "2. You need to get to the green point within 30 seconds.<br>" +
+                "3. If you solve the maze in time: <span style='color:green'>⋆₊ ⊹YOU WIN!⋆₊ ⊹</span><br>" +
+                "4. If you can't: <span style='color:red'>ELIMINATED</span> ☠" +
+                "</html>");
+        instruction.setFont(new Font("Arial", Font.PLAIN, 30));
+        instruction.setForeground(Color.WHITE);
+        instruction.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton startButton = new JButton("START GAME");
+        startButton.setFont(new Font("Arial", Font.BOLD, 35));
+        startButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        startButton.addActionListener(e -> MazeGame());
+
+        panel.add(Box.createVerticalStrut(50));
+        panel.add(game);
+        panel.add(Box.createVerticalStrut(30));
+        panel.add(instruction);
+        panel.add(Box.createVerticalStrut(50));
+        panel.add(startButton);
+
+        mainFrame.getContentPane().removeAll();
+        mainFrame.add(panel);
+        mainFrame.revalidate();
+        mainFrame.repaint();
+        mainFrame.setVisible(true);
+    }
+
+    // ==================== GAME 3: MAZE GAME ====================
+    private void MazeGame() {
+        currentGame = 2;
+        mainFrame.setVisible(false);
+        new MazeGameGUI();
+    }
 
 
 }
