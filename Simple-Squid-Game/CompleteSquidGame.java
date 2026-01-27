@@ -316,6 +316,404 @@ public class CompleteSquidGame {
         mainFrame.setVisible(false);
         new MazeGameGUI();
     }
+    // ==================== LAST PANEL (CONGRATULATIONS) ====================
+    private void LastPanel() {
+        mainFrame.setVisible(false);
+        new LastPanelGUI();
+    }
+
+    // ==================== GAME PASS / FAIL HANDLERS (with logging) ====================
+    public void gamePassed() {
+        String levelName;
+        switch (currentGame) {
+            case 0: levelName = "Red Light Green Light"; break;
+            case 1: levelName = "Memory Match"; break;
+            case 2: levelName = "Maze Game"; break;
+            default: levelName = "Unknown"; break;
+        }
+
+        GameRecord.passed(playerNumber, levelName);
+
+        // proceed to next screen on EDT
+        SwingUtilities.invokeLater(() -> {
+            switch (currentGame) {
+                case 0: Instruction2(); break;
+                case 1: Instruction3(); break;
+                case 2: LastPanel(); break;
+            }
+        });
+    }
+
+    public void gameFailed(String message) {
+        String levelName;
+        switch (currentGame) {
+            case 0: levelName = "Red Light Green Light"; break;
+            case 1: levelName = "Memory Match"; break;
+            case 2: levelName = "Maze Game"; break;
+            default: levelName = "Unknown"; break;
+        }
+
+        GameRecord.failed(playerNumber, levelName);
+
+        SwingUtilities.invokeLater(() -> {
+            JOptionPane.showMessageDialog(null, message);
+            System.exit(0);
+        });
+    }
+
+    // ==================== GAME 1 CLASS: RED LIGHT GREEN LIGHT ====================
+    class RedLightGreenLightGUI extends JFrame {
+        private JLabel statusLabel;
+        private JLabel timerLabel;
+        private JProgressBar progressBar;
+        private JButton moveButton;
+
+        private boolean isGreenLight = true;
+        private int timeLeft = 20;
+        private int progress = 0;
+
+        private javax.swing.Timer gameTimer;
+        private javax.swing.Timer lightSwitchTimer;
+
+        public RedLightGreenLightGUI() {
+            setTitle("Red Light, Green Light - Squid Game");
+            setSize(1500, 800);
+            setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            setLayout(new BorderLayout());
+            setLocationRelativeTo(null);
+
+            statusLabel = new JLabel("Green LIGHT – You can move!", SwingConstants.CENTER);
+            statusLabel.setFont(new Font("Arial", Font.BOLD, 22));
+            statusLabel.setOpaque(true);
+            statusLabel.setBackground(Color.GREEN);
+            add(statusLabel, BorderLayout.NORTH);
+
+            timerLabel = new JLabel("Time Left: " + timeLeft, SwingConstants.CENTER);
+            timerLabel.setFont(new Font("Arial", Font.BOLD, 20));
+            add(timerLabel, BorderLayout.SOUTH);
+
+            progressBar = new JProgressBar(0, 100);
+            progressBar.setValue(0);
+            progressBar.setStringPainted(true);
+            progressBar.setFont(new Font("Arial", Font.BOLD, 18));
+            add(progressBar, BorderLayout.CENTER);
+
+            moveButton = new JButton("MOVE");
+            moveButton.setFont(new Font("Arial", Font.BOLD, 22));
+            moveButton.addActionListener(e -> handleMove());
+            add(moveButton, BorderLayout.EAST);
+
+            startGameTimer();
+            startLightSwitchTimer();
+
+            addWindowListener(new java.awt.event.WindowAdapter() {
+                @Override
+                public void windowClosing(java.awt.event.WindowEvent e) {
+                    stopTimers();
+                }
+            });
+
+            setVisible(true);
+        }
+
+        private void stopTimers() {
+            if (gameTimer != null) gameTimer.stop();
+            if (lightSwitchTimer != null) lightSwitchTimer.stop();
+            dispose();
+        }
+
+        private void handleMove() {
+            if (isGreenLight) {
+                progress += 5;
+                progressBar.setValue(progress);
+
+                if (progress >= 100) {
+                    stopTimers();
+                    dispose();
+                    gamePassed();
+                }
+            } else {
+                stopTimers();
+                gameFailed("You moved during RED LIGHT! Eliminated!");
+            }
+        }
+
+        private void startGameTimer() {
+            gameTimer = new javax.swing.Timer(1000, e -> {
+                timeLeft--;
+                timerLabel.setText("Time Left: " + timeLeft);
+
+                if (timeLeft <= 0) {
+                    stopTimers();
+                    gameFailed("Time is up! ELIMINATED!");
+                }
+            });
+            gameTimer.start();
+        }
+
+        private void startLightSwitchTimer() {
+            Random random = new Random();
+            lightSwitchTimer = new javax.swing.Timer(1500 + random.nextInt(1500), e -> {
+                isGreenLight = !isGreenLight;
+
+                if (isGreenLight) {
+                    statusLabel.setText("GREEN LIGHT – You can move!");
+                    statusLabel.setBackground(Color.GREEN);
+                } else {
+                    statusLabel.setText("RED LIGHT – STOP!");
+                    statusLabel.setBackground(Color.RED);
+                }
+                lightSwitchTimer.setDelay(1500 + random.nextInt(1500));
+            });
+            lightSwitchTimer.start();
+        }
+    }
+
+    // ==================== GAME 2 CLASS: MEMORY GAME ====================
+    class MemoryGameGUI extends JFrame {
+        private MemoryGame game = new MemoryGame();
+        private JButton[] buttons = new JButton[12];
+        private int first = -1, second = -1;
+        private javax.swing.Timer revealTimer;
+        private javax.swing.Timer gameTimer;
+        private int timeLeft = 40;
+        private JLabel timerLabel;
+
+        public MemoryGameGUI() {
+            setTitle("Squid Game Memory Match");
+            setSize(1500, 800);
+            setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            setLayout(new BorderLayout());
+            setLocationRelativeTo(null);
+
+            timerLabel = new JLabel("Time Left: " + timeLeft, SwingConstants.CENTER);
+            timerLabel.setFont(new Font("Arial", Font.BOLD, 20));
+            add(timerLabel, BorderLayout.NORTH);
+
+            JPanel grid = new JPanel(new GridLayout(3, 4, 5, 5));
+            add(grid, BorderLayout.CENTER);
+
+            for (int i = 0; i < 12; i++) {
+                buttons[i] = new JButton("?");
+                buttons[i].setFont(new Font("Segoe UI Symbol", Font.BOLD, 32));
+                buttons[i].setBackground(Color.PINK);
+                int index = i;
+
+                buttons[i].addActionListener(e -> handleClick(index));
+                grid.add(buttons[i]);
+            }
+
+            addWindowListener(new java.awt.event.WindowAdapter() {
+                @Override
+                public void windowClosing(java.awt.event.WindowEvent e) {
+                    stopTimers();
+                }
+            });
+
+            startTimer();
+            setVisible(true);
+        }
+
+        private void stopTimers() {
+            if (gameTimer != null) gameTimer.stop();
+            if (revealTimer != null) revealTimer.stop();
+            dispose();
+        }
+
+        private void handleClick(int index) {
+            try {
+                if (game.tiles[index].isRevealed()) return;
+
+                buttons[index].setText(game.tiles[index].getSymbol());
+
+                if (first == -1) {
+                    first = index;
+                } else if (second == -1) {
+                    second = index;
+
+                    for (JButton b : buttons) b.setEnabled(false);
+
+                    revealTimer = new javax.swing.Timer(700, e -> {
+                        try {
+                            boolean match = game.checkMatch(first, second);
+
+                            if (!match) {
+                                game.tiles[first].hide();
+                                game.tiles[second].hide();
+                                buttons[first].setText("?");
+                                buttons[second].setText("?");
+                            }
+
+                            for (int i = 0; i < 12; i++) {
+                                if (!game.tiles[i].isRevealed())
+                                    buttons[i].setEnabled(true);
+                            }
+
+                            first = -1;
+                            second = -1;
+
+                            revealTimer.stop();
+
+                            if (game.matches == 6) {
+                                stopTimers();
+                                dispose();
+                                gamePassed();
+                            }
+
+                        } catch (InvalidTileException ex) {
+                            gameFailed(ex.getMessage());
+                        }
+                    });
+
+                    revealTimer.setRepeats(false);
+                    revealTimer.start();
+                }
+
+            } catch (Exception e) {
+                gameFailed("Error in game!");
+            }
+            if (game.matches == 6) {
+
+                if (gameTimer != null) gameTimer.stop();
+                if (revealTimer != null) revealTimer.stop();
+
+                dispose();
+                gamePassed();
+            }
+
+        }
+
+        private void startTimer() {
+            gameTimer = new javax.swing.Timer(1000, e -> {
+                timeLeft--;
+                timerLabel.setText("Time Left: " + timeLeft);
+                if (timeLeft <= 0) {
+                    if (revealTimer != null) revealTimer.stop();
+                    stopTimers();
+                    gameFailed("Time Over! ELIMINATED!");
+                }
+            });
+            gameTimer.start();
+        }
+    }
+
+    // ==================== GAME 3 CLASS: MAZE GAME ====================
+    class MazeGameGUI extends JPanel implements KeyListener {
+        private int timeLeft = 30;
+        private javax.swing.Timer countdownTimer;
+
+        private int[][] maze = {
+                {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+                {1,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1,1,1},
+                {1,1,0,1,0,1,0,1,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,1},
+                {1,1,0,1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,1,1},
+                {1,1,0,1,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,0,1,1,1,1,0,1,1},
+                {1,1,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,0,1,1},
+                {1,1,0,1,1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1,1,1,0,0,1,1},
+                {1,1,0,0,1,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,1,0,0,1,1},
+                {1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,1,1,0,1,1,1,0,1,1,1},
+                {1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1},
+                {1,1,1,1,1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,0,1,1,1},
+                {1,1,0,0,1,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,1,0,0,1,1},
+                {1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,0,1,1,1,0,1,1,1},
+                {1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,1,1},
+                {1,1,1,1,1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1},
+                {1,1,0,0,1,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,1,1},
+                {1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,1},
+                {1,1,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,9,0,1,1},
+                {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
+        };
+
+        int playerX = 1;
+        int playerY = 1;
+        int cellSize = 40;
+        private JFrame frame;
+
+        public MazeGameGUI() {
+            frame = new JFrame("Maze Game");
+            frame.setSize(1500, 800);
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            frame.setLocationRelativeTo(null);
+
+            setFocusable(true);
+            addKeyListener(this);
+
+            frame.add(this);
+            frame.setVisible(true);
+            startCountdown();
+            requestFocus();
+        }
+
+        public void paintComponent(Graphics g) {
+            super.paintComponent(g);
+
+            // Draw maze
+            for (int i = 0; i < maze.length; i++) {
+                for (int j = 0; j < maze[i].length; j++) {
+                    if (maze[i][j] == 1) {
+                        g.setColor(Color.BLACK);
+                    } else if (maze[i][j] == 9) {
+                        g.setColor(Color.GREEN);
+                    } else {
+                        g.setColor(Color.WHITE);
+                    }
+                    g.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
+                    g.setColor(Color.GRAY);
+                    g.drawRect(j * cellSize, i * cellSize, cellSize, cellSize);
+                }
+            }
+
+            // Draw player
+            g.setColor(Color.RED);
+            g.fillOval(playerY * cellSize + 10, playerX * cellSize + 10, 20, 20);
+
+            // Draw timer
+            g.setColor(Color.RED);
+            g.setFont(new Font("Arial", Font.BOLD, 24));
+            g.drawString("Time Left: " + timeLeft + "s", 1200, 30);
+        }
+
+        public void keyPressed(KeyEvent e) {
+            int key = e.getKeyCode();
+            int newX = playerX;
+            int newY = playerY;
+
+            if (key == KeyEvent.VK_UP) newX--;
+            else if (key == KeyEvent.VK_DOWN) newX++;
+            else if (key == KeyEvent.VK_LEFT) newY--;
+            else if (key == KeyEvent.VK_RIGHT) newY++;
+
+            if (maze[newX][newY] != 1) {
+                playerX = newX;
+                playerY = newY;
+
+                if (maze[playerX][playerY] == 9) {
+                    countdownTimer.stop();
+                    frame.dispose();
+                    gamePassed();
+                }
+            }
+            repaint();
+        }
+
+        private void startCountdown() {
+            countdownTimer = new javax.swing.Timer(1000, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    timeLeft--;
+                    if (timeLeft <= 0) {
+                        countdownTimer.stop();
+                        frame.dispose();
+                        gameFailed("⏰ Time's up! ELIMINATED!");
+                    }
+                    repaint();
+                }
+            });
+            countdownTimer.start();
+        }
+
+        public void keyTyped(KeyEvent e) {}
+        public void keyReleased(KeyEvent e) {}
+    }
 
 
 }
