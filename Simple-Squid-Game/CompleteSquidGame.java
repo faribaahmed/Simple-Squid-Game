@@ -714,6 +714,137 @@ public class CompleteSquidGame {
         public void keyTyped(KeyEvent e) {}
         public void keyReleased(KeyEvent e) {}
     }
+// ==================== LAST PANEL CLASS ====================
+    class LastPanelGUI extends JFrame {
+        public LastPanelGUI() {
+            setTitle("Congratulations!");
+            setSize(900, 600);
+            setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            setLocationRelativeTo(null);
+
+            JPanel panel = new JPanel();
+            panel.setBackground(new Color(225, 215, 0));
+            panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+            JLabel moneyEmoji = new JLabel("˗ˋˏ$ˎˊ˗");
+            moneyEmoji.setFont(new Font("Orbitron", Font.BOLD, 120));
+            moneyEmoji.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+            JLabel playerText = new JLabel("Player #" + playerNumber);
+            playerText.setFont(new Font("Orbitron", Font.BOLD, 40));
+            playerText.setForeground(new Color(255, 255, 255));
+            playerText.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+            JLabel text1 = new JLabel("CASH PRIZE");
+            text1.setFont(new Font("Orbitron", Font.BOLD, 30));
+            text1.setForeground(new Color(255, 255, 255));
+            text1.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+            JLabel text2 = new JLabel("$4,560,000");
+            text2.setFont(new Font("Orbitron", Font.BOLD, 80));
+            text2.setForeground(new Color(255, 255, 255));
+            text2.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+            JButton showResultsBtn = new JButton("Show Results");
+            showResultsBtn.setFont(new Font("Arial", Font.BOLD, 18));
+            showResultsBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+            showResultsBtn.addActionListener(e -> new ResultsGUI());
+
+            JButton exitBtn = new JButton("Exit");
+            exitBtn.setFont(new Font("Arial", Font.BOLD, 18));
+            exitBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+            exitBtn.addActionListener(e -> System.exit(0));
+
+            panel.add(Box.createVerticalStrut(30));
+            panel.add(playerText);
+            panel.add(Box.createVerticalStrut(10));
+            panel.add(moneyEmoji);
+            panel.add(Box.createVerticalStrut(10));
+            panel.add(text1);
+            panel.add(Box.createVerticalStrut(10));
+            panel.add(text2);
+            panel.add(Box.createVerticalStrut(20));
+            panel.add(showResultsBtn);
+            panel.add(Box.createVerticalStrut(10));
+            panel.add(exitBtn);
+            panel.add(Box.createVerticalStrut(30));
+
+            add(panel);
+            setVisible(true);
+        }
+    }
+
+    // ==================== MEMORY GAME HELPER CLASSES ====================
+    class Tile {
+        protected String symbol;
+        protected boolean revealed = false;
+
+        public Tile(String symbol) {
+            this.symbol = symbol;
+        }
+
+        public void reveal() {
+            revealed = true;
+        }
+
+        public void hide() {
+            revealed = false;
+        }
+
+        public boolean isRevealed() {
+            return revealed;
+        }
+
+        public String getSymbol() {
+            return symbol;
+        }
+    }
+
+    class SquidTile extends Tile {
+        public SquidTile(String symbol) {
+            super(symbol);
+        }
+    }
+
+    class MemoryGame {
+        private String[] symbols = {"▲", "●", "■", "♡", "★", "☀"};
+        public Tile[] tiles = new Tile[12];
+        public int matches = 0;
+
+        public MemoryGame() {
+            generateTiles();
+        }
+
+        private void generateTiles() {
+            ArrayList<String> pool = new ArrayList<>();
+            for (String s : symbols) {
+                pool.add(s);
+                pool.add(s); // create pairs
+            }
+            Collections.shuffle(pool);
+            for (int i = 0; i < 12; i++) {
+                tiles[i] = (i % 2 == 0) ? new SquidTile(pool.get(i)) : new Tile(pool.get(i));
+            }
+        }
+
+        public boolean checkMatch(int a, int b) throws InvalidTileException {
+            if (a == b || a < 0 || b < 0 || a >= tiles.length || b >= tiles.length)
+                throw new InvalidTileException("Invalid Tile Selection!");
+            if (tiles[a].getSymbol().equals(tiles[b].getSymbol())) {
+                tiles[a].reveal();
+                tiles[b].reveal();
+                matches++;
+                return true;
+            }
+            return false;
+        }
+    }
+
+    class InvalidTileException extends Exception {
+        public InvalidTileException(String message) {
+            super(message);
+        }
+    }
 
 
 }
