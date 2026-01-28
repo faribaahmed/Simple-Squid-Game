@@ -845,6 +845,100 @@ public class CompleteSquidGame {
             super(message);
         }
     }
+ // ==================== RESULT LOGGING CLASS ====================
+    static class GameRecord {
+        private static final String FILE_NAME = "squid_results.txt";
 
+        public static void log(String text) {
+            try (FileWriter writer = new FileWriter(FILE_NAME, true)) {
+                writer.write(text + System.lineSeparator());
+            } catch (IOException e) {
+                System.out.println("Error writing to " + FILE_NAME + ": " + e.getMessage());
+            }
+        }
 
+        public static void passed(int player, String levelName) {
+            log("Player " + player + " PASSED: " + levelName);
+        }
+
+        public static void failed(int player, String levelName) {
+            log("Player " + player + " FAILED at: " + levelName);
+        }
+    }
+
+    // ==================== RESULTS VIEWER GUI ====================
+    class ResultsGUI extends JFrame {
+        private JTable table;
+        private DefaultTableModel model;
+
+        public ResultsGUI() {
+            setTitle("Squid Game Results");
+            setSize(1500, 800);
+            setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+            setLocationRelativeTo(null);
+
+            String[] columns = {"Player", "Status", "Level"};
+            model = new DefaultTableModel(columns, 0);
+            table = new JTable(model);
+            table.setFont(new Font("Arial", Font.PLAIN, 14));
+            table.setRowHeight(24);
+
+            JScrollPane scrollPane = new JScrollPane(table);
+
+            JButton refreshBtn = new JButton("Refresh Results");
+            refreshBtn.addActionListener(e -> loadResults());
+
+            JPanel topPanel = new JPanel();
+            topPanel.add(refreshBtn);
+
+            add(topPanel, BorderLayout.NORTH);
+            add(scrollPane, BorderLayout.CENTER);
+
+            loadResults();
+            setVisible(true);
+        }
+
+        private void loadResults() {
+            model.setRowCount(0);
+
+            File file = new File("squid_results.txt");
+            if (!file.exists()) {
+                JOptionPane.showMessageDialog(this, "No results found yet!");
+                return;
+            }
+
+            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    String[] parsed = parseLine(line);
+                    if (parsed != null) model.addRow(parsed);
+                }
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Error reading results: " + e.getMessage());
+            }
+        }
+
+        private String[] parseLine(String line) {
+            try {
+                String[] parts = line.split(" ");
+                if (parts.length < 3) return null;
+                String player = parts[1];
+                String status = line.contains("PASSED") ? "PASSED" : "FAILED";
+                String level;
+                if (line.contains(":")) {
+                    level = line.substring(line.indexOf(":") + 2);
+                } else if (line.contains("at:")) {
+                    level = line.substring(line.indexOf("at:") + 4);
+                } else {
+                    level = "Unknown";
+                }
+                return new String[]{player, status, level};
+            } catch (Exception e) {
+                return null;
+            }
+        }
+    }
 }
+
+
+
